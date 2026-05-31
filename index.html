@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jayakanth Kamisetti — Portfolio</title>
+<meta name="description" content="Portfolio of Jayakanth Kamisetti — CSIT student building full-stack apps, infrastructure, and systems. Based in Hyderabad." />
+<meta name="author" content="Jayakanth Kamisetti" />
+<meta name="keywords" content="Jayakanth Kamisetti, portfolio, full-stack, CSIT, developer, Hyderabad" />
+
+<!-- Open Graph -->
+<meta property="og:title" content="Jayakanth Kamisetti — Portfolio" />
+<meta property="og:description" content="CSIT student building full-stack apps, infrastructure, and systems." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://jayakanth.dev" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Jayakanth Kamisetti — Portfolio" />
+<meta name="twitter:description" content="CSIT student building full-stack apps, infrastructure, and systems." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&family=VT323&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="sections.css">
+<link rel="stylesheet" href="motion.css">
+
+<style>
+  /* ===== Splash (HTML-only, runs before React/Babel are ready) ===== */
+  html, body { background: #07090d; }
+  #splash {
+    position: fixed; inset: 0; z-index: 100000;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(1200px 800px at 50% 50%, #0e1219 0%, #07090d 60%, #050608 100%);
+    transition: opacity .35s ease, visibility .35s ease;
+    color: #ece4d0;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+  }
+  body.booted #splash { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  /* ===== Terminal boot log ===== */
+  #splash { align-items: flex-start; justify-content: flex-start; }
+  #splash .boot {
+    width: min(720px, 92vw);
+    margin: 0;
+    padding: 28px 0 0 32px;
+  }
+  #splash .boot-log {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.75;
+    font-variant-ligatures: none;
+  }
+  #splash .boot-line {
+    display: block;
+    white-space: pre-wrap;
+    word-break: break-word;
+    animation: bootIn .16s ease both;
+  }
+  #splash .boot-line.sp { height: 0.9em; }
+  #splash .boot-line.head { color: #ece4d0; letter-spacing: 0.02em; margin-bottom: 2px; }
+  #splash .boot-line.head .v { color: #3eff9a; }
+  #splash .b-br  { color: #ece4d055; }
+  #splash .b-ok  { color: #3eff9a; text-shadow: 0 0 10px #3eff9a55; }
+  #splash .b-warn{ color: #ffcf6b; }
+  #splash .b-k   { color: #ece4d044; }
+  #splash .b-msg { color: #ece4d0cc; }
+  #splash .b-run { color: #3eff9a; }
+  /* animated dots on the final "starting session" line */
+  #splash .b-run::after {
+    content: "";
+    animation: spDots 1s steps(4, end) infinite;
+  }
+  /* blinking block cursor parked at the end of the log */
+  #splash .boot-caret {
+    display: inline-block;
+    width: 8px; height: 15px;
+    margin-left: 2px;
+    background: #3eff9a;
+    vertical-align: -2px;
+    box-shadow: 0 0 10px #3eff9a66;
+    animation: spBlink 1s steps(1) infinite;
+  }
+  #splash .boot-skip {
+    margin-top: 22px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #ece4d038;
+  }
+
+  @keyframes bootIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+  @keyframes spBlink { 50% { opacity: 0; } }
+  @keyframes spDots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+
+  /* reduced-motion: no per-line slide, no shadows */
+  body.reduced-motion #splash .boot-line { animation: none; }
+  body.reduced-motion #splash .b-ok { text-shadow: none; }
+</style>
+</head>
+<body>
+<script>
+  // Respect the user's reduced-motion preference (accessibility / OS setting).
+  (function () {
+    var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.body.classList.toggle("reduced-motion", !!reduced);
+  })();
+</script>
+<div id="splash" aria-hidden="true">
+  <div class="boot">
+    <div class="boot-log" id="boot-log"></div>
+    <div class="boot-skip">press any key to skip</div>
+  </div>
+</div>
+<script>
+  // ===== Terminal boot sequence (vanilla — runs before React/Babel) =====
+  (function () {
+    var sp  = document.getElementById("splash");
+    var log = document.getElementById("boot-log");
+    if (!sp || !log) { window.__bootDone = true; return; }
+
+    var reduced = document.body.classList.contains("reduced-motion");
+    var fast    = reduced;
+
+    // boot log, themed to the actual stack
+    var LINES = [
+      { head: true, html: 'jk-os <span class="v">24.05 LTS</span>  \u00b7  tty1' },
+      { sp: true },
+      { k: "[    0.000000]", t: "booting jk-os \u2026 cold start" },
+      { k: "[    0.214887]", t: "probing hardware \u2014 cpu, gpu, entropy" },
+      { ok: true, t: "Mounted /dev/portfolio" },
+      { ok: true, t: "Reached target Local File Systems" },
+      { ok: true, t: "Started Hardware RNG \u2014 entropy gathered" },
+      { ok: true, t: "Loaded module react@18.3.1" },
+      { ok: true, t: "Loaded module babel-standalone@7" },
+      { ok: true, t: "Started GPU compositor  (motion-blur: on)" },
+      { ok: true, t: "Started cursor daemon" },
+      { ok: true, t: "Mounted /home/jayakanth" },
+      { ok: true, t: "Reached target Graphical Interface" },
+      { sp: true },
+      { login: true, t: "jk login: jayakanth" },
+      { run: true, t: "starting portfolio session" },
+    ];
+
+    function render(ln) {
+      var el = document.createElement("div");
+      el.className = "boot-line" + (ln.head ? " head" : "") + (ln.sp ? " sp" : "");
+      if (ln.sp) { el.innerHTML = "&nbsp;"; }
+      else if (ln.head) { el.innerHTML = ln.html; }
+      else {
+        var s = "";
+        if (ln.ok)      s += '<span class="b-br">[<span class="b-ok">  OK  </span>]</span> ';
+        else if (ln.k)  s += '<span class="b-k">' + ln.k + "</span> ";
+        else if (ln.login) s += '<span class="b-msg">';
+        s += '<span class="' + (ln.run ? "b-run" : "b-msg") + '">' + (ln.t || "") + "</span>";
+        if (ln.login) s += "</span>";
+        el.innerHTML = s;
+      }
+      log.appendChild(el);
+    }
+
+    var caret = document.createElement("span");
+    caret.className = "boot-caret";
+
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      window.__bootDone = true;
+      if (window.maybeHideSplash) window.maybeHideSplash();
+    }
+
+    function skip() {
+      // dump any remaining lines instantly, then finish
+      while (idx < LINES.length) { render(LINES[idx++]); }
+      finish();
+    }
+
+    var idx = 0;
+    function step() {
+      if (idx >= LINES.length) {
+        log.appendChild(caret);
+        setTimeout(finish, fast ? 120 : 620);
+        return;
+      }
+      var ln = LINES[idx++];
+      render(ln);
+      var d;
+      if (fast)            d = 14;
+      else if (ln.head)    d = 240;
+      else if (ln.sp)      d = 60;
+      else if (ln.login)   d = 360;
+      else if (ln.run)     d = 120;
+      else                 d = 78 + Math.random() * 64; // jittered like a real log
+      setTimeout(step, d);
+    }
+
+    // skip on any key / click / touch
+    var onSkip = function () {
+      window.removeEventListener("keydown", onSkip);
+      sp.removeEventListener("click", onSkip);
+      sp.removeEventListener("touchstart", onSkip);
+      skip();
+    };
+    window.addEventListener("keydown", onSkip);
+    sp.addEventListener("click", onSkip);
+    sp.addEventListener("touchstart", onSkip, { passive: true });
+
+    step();
+  })();
+</script>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+/* shared icon set as inline SVG components */
+const Icon = {
+  github: (props) => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+    </svg>
+  ),
+  instagram: (props) => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    </svg>
+  ),
+  linkedin: (props) => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/>
+      <rect x="2" y="9" width="4" height="12"/>
+      <circle cx="4" cy="4" r="2"/>
+    </svg>
+  ),
+  mail: (props) => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+      <polyline points="22,6 12,13 2,6"/>
+    </svg>
+  ),
+  externalLink: (props) => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+      <polyline points="15 3 21 3 21 9"/>
+      <line x1="10" y1="14" x2="21" y2="3"/>
+    </svg>
+  ),
+};
+
+const Navbar = () => {
+  const [active, setActive] = React.useState("about");
+  const [visible, setVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const check = () => {
+      const el = document.getElementById("about");
+      setVisible(!!el && el.getBoundingClientRect().top <= window.innerHeight * 0.6);
+    };
+    window.addEventListener("scroll", check, { passive: true });
+    check();
+    return () => window.removeEventListener("scroll", check);
+  }, []);
+
+  React.useEffect(() => {
+    const ids = ["about", "projects", "stack", "experience", "certifications", "contact"];
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY + window.innerHeight * 0.35;
+        let current = ids[0];
+        for (const id of ids) {
+          const el = document.getElementById(id);
+          if (el && el.offsetTop <= y) current = id;
+        }
+        setActive(current);
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const link = (id, label) => (
+    <a href={`#${id}`} className={active === id ? "active" : ""}>{label}</a>
+  );
+
+  return (
+    <header className={`navbar${visible ? " navbar--visible" : ""}`}>
+      <nav className="nav-pill nav-links">
+        {link("about", "About")}
+        {link("projects", "Projects")}
+        {link("stack", "Stack")}
+        {link("experience", "Timeline")}
+        {link("certifications", "Certs")}
+        {link("contact", "Contact")}
+      </nav>
+    </header>
+  );
+};
+
+const Rail = () => (
+  <aside className="rail glass">
+    <a href="https://github.com/jayakanthh" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><Icon.github /></a>
+    <a href="https://www.linkedin.com/in/jayakanthh/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Icon.linkedin /></a>
+    <a href="mailto:jayakanthkamisetti@gmail.com" aria-label="Email"><Icon.mail /></a>
+    <span className="line" />
+  </aside>
+);
+
+const FooterMini = () => {
+  const [shown, setShown] = React.useState(false);
+  React.useEffect(() => {
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const scrolled = window.scrollY + window.innerHeight;
+        const total = document.documentElement.scrollHeight;
+        setShown(total - scrolled < 120);
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <div className={`footer-mini glass ${shown ? "shown" : ""}`}>
+      <div className="meta">
+        <span>© {new Date().getFullYear()} Jayakanth Kamisetti</span>
+      </div>
+      <div className="icons">
+        <a href="https://github.com/jayakanthh" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><Icon.github /></a>
+        <a href="https://www.linkedin.com/in/jayakanthh/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Icon.linkedin /></a>
+        <a href="mailto:jayakanthkamisetti@gmail.com" aria-label="Email"><Icon.mail /></a>
+      </div>
+    </div>
+  );
+};
+
+const ToTop = () => {
+  const [shown, setShown] = React.useState(false);
+  React.useEffect(() => {
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        setShown(window.scrollY > window.innerHeight * 0.8);
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  const click = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  return (
+    <button
+      type="button"
+      className={`to-top ${shown ? "shown" : ""}`}
+      onClick={click}
+      aria-label="Back to top"
+    >
+      <span className="tt-arrow" aria-hidden="true">↑</span>
+      <span className="tt-label">top</span>
+    </button>
+  );
+};
+
+Object.assign(window, { Navbar, Rail, FooterMini, ToTop, Icon });
+</script>
+
+<script type="text/babel">
+/* Cursor */
+const Cursor = () => {
+  const innerRef = React.useRef(null);
+  const outerRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const inner = innerRef.current;
+    const outer = outerRef.current;
+    if (!inner || !outer) return;
+
+    const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    if (isTouch) {
+      inner.style.display = "none";
+      outer.style.display = "none";
+      return;
+    }
+
+    const isClickable = (el) => {
+      while (el && el !== document.body) {
+        const tag = el.tagName;
+        if (tag === "A" || tag === "BUTTON" || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+        if (el.classList && (
+          el.classList.contains("tech-icon") ||
+          el.classList.contains("btn") ||
+          el.classList.contains("chip") ||
+          el.classList.contains("project-card") ||
+          el.classList.contains("about-card") ||
+          el.classList.contains("orbit-tag") ||
+          el.classList.contains("orbit-cat") ||
+          el.classList.contains("hero-btn") ||
+          el.classList.contains("pr-item") ||
+          el.classList.contains("tl-card") ||
+          el.classList.contains("tlc-chip") ||
+          el.classList.contains("to-top")
+        )) return true;
+        el = el.parentElement;
+      }
+      return false;
+    };
+
+    let revealed = false;
+    let wasHover = false;
+
+    const onMove = (e) => {
+      const x = e.clientX;
+      const y = e.clientY;
+      inner.style.left = x + "px";
+      inner.style.top  = y + "px";
+      outer.animate(
+        { left: x + "px", top: y + "px" },
+        { duration: 500, fill: "forwards" }
+      );
+      if (!revealed) {
+        revealed = true;
+        document.body.classList.add("cursor-shown");
+      }
+      const h = isClickable(e.target);
+      if (h !== wasHover) {
+        inner.classList.toggle("hover", h);
+        outer.classList.toggle("hover", h);
+        wasHover = h;
+      }
+    };
+    const onLeaveWindow = () => {
+      revealed = false;
+      document.body.classList.remove("cursor-shown");
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    document.addEventListener("mouseleave", onLeaveWindow);
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseleave", onLeaveWindow);
+    };
+  }, []);
+
+  return (
+    <>
+      <div ref={outerRef} className="cursor-outer" aria-hidden="true" />
+      <div ref={innerRef} className="cursor-inner" aria-hidden="true" />
+    </>
+  );
+};
+
+window.Cursor = Cursor;
+</script>
+
+<script type="text/babel">
+/* Hero */
+const TERMINAL_LINES = [
+  { kind: "prompt", cmd: "whoami", out: ["jayakanth Kamisetti"] },
+  { kind: "prompt", cmd: "cat role.txt", out: ["CSIT Student"] },
+  { kind: "prompt", cmd: "cat wins.txt", out: ["3x hackathon winner · AWS certified · Automation Anywhere certified"] },
+  { kind: "prompt", cmd: "ls ~/skills", out: null, chips: true },
+  { kind: "prompt", cmd: "./now --status", out: ["Working on openclaw"] },
+  { kind: "prompt", cmd: "_", out: null, blink: true },
+];
+
+const SKILL_CHIPS = ["python", "react", "java", "js/ts", "sql", "spark", "aws", "docker"];
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const Hero = () => {
+  const [typed, setTyped] = React.useState([]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      for (let i = 0; i < TERMINAL_LINES.length; i++) {
+        if (cancelled) return;
+        const line = TERMINAL_LINES[i];
+        for (let c = 0; c <= line.cmd.length; c++) {
+          if (cancelled) return;
+          setTyped((prev) => {
+            const next = [...prev];
+            next[i] = { typedCmd: line.cmd.slice(0, c), out: [], showChips: false };
+            return next;
+          });
+          await sleep(30 + Math.random() * 40);
+        }
+        await sleep(220);
+        if (line.out) {
+          for (let oi = 0; oi < line.out.length; oi++) {
+            if (cancelled) return;
+            setTyped((prev) => {
+              const next = [...prev];
+              next[i] = { ...next[i], out: [...(next[i].out || []), line.out[oi]] };
+              return next;
+            });
+            await sleep(120);
+          }
+        }
+        if (line.chips) {
+          if (cancelled) return;
+          setTyped((prev) => {
+            const next = [...prev];
+            next[i] = { ...next[i], showChips: true };
+            return next;
+          });
+          await sleep(420);
+        }
+        await sleep(160);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, []);
+
+  return (
+    <section id="home" className="hero">
+      <div className="hero-particles">
+        {Array.from({length: 18}).map((_, i) => (
+          <span key={i} style={{
+            left: `${(i * 53) % 100}%`,
+            top: `${(i * 37) % 100}%`,
+            animationDelay: `${i * 0.6}s`,
+            animationDuration: `${10 + (i % 6)}s`,
+          }} />
+        ))}
+      </div>
+      <div className="hero-split">
+        <div className="hero-left">
+          <h1 className="hero-title">
+            <span className="ht-line">Hello There! I'm</span>
+            <span className="ht-line ht-green">
+              Jayakanth Kamisetti<span className="ht-caret" aria-hidden="true" />
+            </span>
+          </h1>
+          <p className="hero-body">
+            Final year Computer Science student who builds things
+            <span className="hero-body-em"> end to end </span>  
+            from the interface down to the infrastructure. I go deep on whatever I'm working on.
+          </p>
+          <div className="hero-cta">
+            <a href="#projects" className="hero-btn primary">
+              <span>explore projects</span>
+              <span className="hb-arrow">→</span>
+            </a>
+            <a href="#about" className="hero-btn">introduction</a>
+          </div>
+        </div>
+        <div className="hero-right">
+          <div className="terminal glass">
+            <div className="term-bar">
+              <span className="tl tl-r" />
+              <span className="tl tl-y" />
+              <span className="tl tl-g" />
+              <span className="term-title">terminal://jayakanth</span>
+              <span className="term-meta">86×24</span>
+            </div>
+            <div className="term-body">
+              {TERMINAL_LINES.map((line, i) => {
+                const t = typed[i];
+                if (!t) return null;
+                return (
+                  <div key={i} className="term-line">
+                    <div className="term-cmd">
+                      <span className="term-prompt">jay@home <span className="arrow">❯</span></span>
+                      <span className="term-text">{t.typedCmd}{i === typed.length - 1 && line.blink ? <span className="caret" /> : null}</span>
+                    </div>
+                    {t.out && t.out.length > 0 && (
+                      <div className="term-out">
+                        {t.out.map((o, oi) => (
+                          <div key={oi} className={o.startsWith("//") ? "comment" : ""}>{o}</div>
+                        ))}
+                      </div>
+                    )}
+                    {t.showChips && (
+                      <div className="term-chips">
+                        {SKILL_CHIPS.map((s, si) => (
+                          <span key={si} className="term-chip" style={{ animationDelay: `${si * 60}ms` }}>{s}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="hero-scroll" aria-hidden="true">
+        <span className="hs-line" />
+        <span className="hs-label">scroll</span>
+      </div>
+    </section>
+  );
+};
+
+window.Hero = Hero;
+</script>
+
+<script type="text/babel">
+/* About */
+const About = () => (
+  <section id="about" className="about">
+    <div style={{ display: "flex", flexDirection: "column" }}>
+  <div className="eyebrow"><span className="dot" />01 / About</div>
+  <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+    <div className="about-card">
+      <div className="ac-big">CURRENTLY<br/>COMPILING.</div>
+      <div className="ac-meta">
+        <div><span>loc</span><b>Hyderabad, India</b></div>
+        <div><span>degree</span><b>B.Tech CSIT · 2027</b></div>
+        <div><span>status</span><b className="green-text">Open to work</b></div>
+      </div>
+      <a href="Resume.pdf" className="ac-resume" download="Jayakanth_Kamisetti_Resume.pdf">
+        <span>↓ download resume</span>
+        <span className="ac-resume-meta">PDF</span>
+      </a>
+    </div>
+  </div>
+</div>
+    <div className="about-body">
+      <h2 className="section-title">About <em>ME</em></h2>
+      <p>
+        I'm a CSIT student who gets curious and goes deep. I work across <em>the full stack</em> web apps, infrastructure, 
+        the deployment side, and the messy parts in between not because I planned it that way, just because that's where 
+        the problems kept taking me. I care about things working correctly, not just working. Clean error handling, 
+        predictable behaviour, code that someone else can read at 2am. That stuff matters to me.
+      </p>
+      <p>
+       Lately that's meant running a <em>self-hosted LLM gateway</em> on a Raspberry Pi, building a 
+       password manager with <em>proper encryption</em>, wiring up <em>CI/CD pipelines</em> from scratch, 
+       and training a <em>face recognition model</em> mostly to see if I could. Each thing pulled me somewhere I didn't expect
+        and that's kind of the point. I don't really stop at the obvious layer.
+      </p>
+      <div className="about-stats">
+        <div className="stat"><div className="n">7</div><div className="l">shipped projects</div></div>
+        <div className="stat"><div className="n">∞</div><div className="l">cups of coffee</div></div>
+      </div>
+    </div>
+  </section>
+);
+
+window.About = About;
+</script>
+
+<script type="text/babel">
+/* Tech Stack */
+const TECH_V3 = [
+  // languages
+  { id: "py",    name: "Python",      icon: "python",      color: "3776AB" },
+  { id: "ts",    name: "TypeScript",  icon: "typescript",  color: "3178C6" },
+  { id: "js",    name: "JavaScript",  icon: "javascript",  color: "F7DF1E" },
+  { id: "jv",    name: "Java",        icon: "logos:java",  color: "" },
+  { id: "cpp",   name: "C / C++",     icon: "cplusplus",   color: "00599C" },
+  { id: "html",  name: "HTML",        icon: "html5",       color: "E34F26" },
+  { id: "css",   name: "CSS",         icon: "css",         color: "1572B6" },
+  // databases
+  { id: "sql",   name: "SQL",         icon: "sqlite",      color: "ECE4D0" },
+  { id: "mysql", name: "MySQL",       icon: "mysql",       color: "4479A1" },
+  { id: "mongo", name: "MongoDB",     icon: "mongodb",     color: "47A248" },
+  // frameworks & libraries
+  { id: "react", name: "React",       icon: "react",       color: "61DAFB" },
+  { id: "next",  name: "Next.js",     icon: "nextdotjs",   color: "ECE4D0" },
+  { id: "spark", name: "Spark",       icon: "apachespark", color: "E25A1C" },
+  // tools & infra
+  { id: "aws",   name: "AWS",         icon: "amazonaws",   color: "FF9900" },
+  { id: "docker",name: "Docker",      icon: "docker",      color: "2496ED" },
+  { id: "git",   name: "Git",         icon: "git",         color: "F05032" },
+  { id: "cflare",name: "Cloudflare",  icon: "cloudflare",  color: "F38020" },
+  { id: "linux", name: "Linux",       icon: "linux",       color: "FCC624" },
+];
+
+const techIconUrl = (t) =>
+  t.icon.includes(':')
+    ? `https://api.iconify.design/${t.icon}.svg`
+    : `https://api.iconify.design/simple-icons:${t.icon}.svg?color=%23${t.color}`;
+
+const TechTile = ({ t }) => (
+  <div className="tw3-tile">
+    <div className="tw3-icon">
+      <img src={techIconUrl(t)} alt="" draggable="false" />
+    </div>
+    <div className="tw3-name">{t.name}</div>
+  </div>
+);
+
+const TechStack = () => (
+  <section id="stack" className="tech-v3">
+    <div className="eyebrow"><span className="dot" />03 / Tech Stack</div>
+    <h2 className="section-title">The <em>toolbox</em>.</h2>
+    <div className="tw3-wall">
+      {TECH_V3.map(t => <TechTile key={t.id} t={t} />)}
+    </div>
+  </section>
+);
+
+window.TechStack = TechStack;
+</script>
+
+<script type="text/babel">
+/* Projects */
+const PROJECTS = [
+  {
+    num: "01",
+    title: "Attendance Calculator",
+    em: "KLU student tool",
+    desc: "ERP scraper that logs into the university portal and auto-fetches live attendance data. Three calculation modes: simple percentage, LTPS weighted, and OCR screenshot extraction. 42.5K clicks and 292K impressions in three months — no promotion, just search.",
+    stack: ["Next.js 15", "TypeScript", "Tailwind", "Cheerio", "OCR API", "Framer Motion"],
+    visual: "img:Photos/kl-attendance.png",
+    github: "https://github.com/jayakanthh/Attendance-Calculator",
+    url: "https://klattendance.vercel.app/welcome",
+  },
+  {
+    num: "02",
+    title: "Claim EX",
+    em: "AI motor damage estimator",
+    desc: "Upload a photo of your car — a Vision LLM (GPT-4o / Gemini / LLaVA) identifies every dent and scratch, pulls real-time part prices off the web, and spits out a line-item repair estimate with labor and GST. Built because insurance claims are designed to slow you down.",
+    stack: ["React", "FastAPI", "GPT-4o", "Gemini", "OpenCV", "Tailwind"],
+    visual: "img:Photos/claim-ex.png",
+    github: "https://github.com/jayakanthh/Motor-Insurance-Claim-Estimator",
+    url: "https://claimex.vercel.app",
+  },
+  {
+    num: "03",
+    title: "AIDE",
+    em: "autonomous ML platform",
+    desc: "Drop a CSV, get a production ML API. AIDE profiles your data, writes the cleaning and training pipeline, benchmarks Random Forest / XGBoost / Linear Regression with cross-validation, explains predictions with SHAP, and deploys a FastAPI service with auth and Swagger — all driven by Claude, Gemini, or a local LLM.",
+    stack: ["FastAPI", "React", "Claude API", "Gemini", "scikit-learn", "XGBoost", "SHAP"],
+    visual: "claw",
+    github: "https://github.com/jayakanthh/intellipipeline-ai",
+    url: null,
+  },
+  {
+    num: "04",
+    title: "Cipher Safe",
+    em: "encrypted password vault",
+    desc: "Full-stack vault with an explicit threat model: AES encryption at rest, in-memory decryption only on access, JWT-authenticated sessions, zero plaintext in the database. Built to understand what secure storage actually means — not just bcrypt and call it done.",
+    stack: ["React", "Node.js", "MySQL", "JWT", "AES-256"],
+    visual: "cipher",
+    github: "https://github.com/jayakanthh/Password-Manager",
+    url: "https://cipherrsafee.vercel.app",
+  },
+  {
+    num: "05",
+    title: "Review Insights",
+    em: "data engineering pipeline",
+    desc: "End-to-end pipeline that ingests raw product reviews, runs NLP sentiment analysis, segments customers by behaviour, and surfaces the results in an interactive analytics dashboard. The kind of thing a data team would actually ship.",
+    stack: ["Python", "Streamlit", "Pandas", "NLP", "scikit-learn"],
+    visual: "ocr",
+    github: "https://github.com/jayakanthh/Product-Review-Analysis",
+    url: null,
+  },
+  {
+    num: "06",
+    title: "Face Recognition",
+    em: "real-time CV system",
+    desc: "Detects and identifies multiple faces across live video streams with no cloud dependency. Built measurement-first: profiled every bottleneck, isolated one variable at a time, and pushed processing speed up 30%. Runs fully on-device.",
+    stack: ["Python", "OpenCV", "dlib", "NumPy"],
+    visual: "face",
+    github: "https://github.com/jayakanthh/Face-Recognition",
+    url: null,
+  },
+  {
+    num: "07",
+    title: "QR Forge",
+    em: "QR generator & scanner",
+    desc: "Generates customisable QR codes with logo embedding, custom colours, and configurable output sizes — and scans them back. Ships as a clean, no-signup web tool built in a weekend because every other QR generator was either ugly or paywalled.",
+    stack: ["Next.js", "React", "Tailwind", "qrcode.react", "jsQR"],
+    visual: "img:Photos/qr-forge.png",
+    github: "https://github.com/jayakanthh/QR_Forge",
+    url: "https://qr-forge.vercel.app",
+  },
+];
+
+const ProjectVisual = ({ kind }) => {
+  if (kind.startsWith("img:")) {
+    return (
+      <div className="vmount v-img" style={{ background: "radial-gradient(closest-side, #0e1219, #07080c)" }}>
+        <img src={kind.slice(4)} alt="" style={{ position: "absolute", top: "20px", left: 0, right: 0, bottom: 0, width: "100%", height: "calc(100% - 20px)", objectFit: "cover", objectPosition: "top", display: "block" }} />
+      </div>
+    );
+  }
+  if (kind === "cipher") {
+    return (
+      <div className="vmount v-cipher">
+        <div className="key-rows">
+          {[
+            ["github.com", "•••••••• 32ch", "🔒"],
+            ["aws-console", "•••••••• 32ch", "🔒"],
+            ["mysql/root", "•••••••• 32ch", "🔒"],
+            ["openclaw/api", "•••••••• 32ch", "🔒"],
+            ["+ new entry", "AES-256-GCM", "✓"],
+          ].map(([l, v, k], i) => (
+            <div key={i} className="key-row">
+              <span className="label">{l}</span>
+              <span className="val">{v}</span>
+              <span className="lock">{k}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (kind === "ocr") {
+    return (
+      <div className="vmount v-ocr">
+        <div className="scan">
+          <div className="row med" />
+          <div className="row short" />
+          <div className="row" />
+          <div className="row med" />
+          <div className="row short" />
+          <div className="row" />
+          <div className="row med" />
+        </div>
+        <div className="laser" />
+        <div className="stamp">87.4% PRESENT</div>
+      </div>
+    );
+  }
+  if (kind === "claw") {
+    return (
+      <div className="vmount v-claw">
+        <svg viewBox="0 0 400 320" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <radialGradient id="cg" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#3eff9a" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#3eff9a" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          {[[200,160,80,80],[200,160,320,80],[200,160,80,240],[200,160,320,240],[200,160,200,40],[200,160,200,280]].map((c, i) => (
+            <line key={i} x1={c[0]} y1={c[1]} x2={c[2]} y2={c[3]} stroke="#ece4d028" strokeWidth="1" strokeDasharray="2 4" />
+          ))}
+          <circle cx="200" cy="160" r="40" fill="url(#cg)" />
+          <circle cx="200" cy="160" r="22" fill="none" stroke="#3eff9a" strokeWidth="1.5" />
+          <text x="200" y="165" textAnchor="middle" fontFamily="JetBrains Mono" fontSize="10" fill="#3eff9a" letterSpacing="2">PI</text>
+          {[[80,80,"llm-7b"],[320,80,"llm-3b"],[80,240,"vector-db"],[320,240,"telegram"],[200,40,"tunnel"],[200,280,"router"]].map(([x,y,l], i) => (
+            <g key={i}>
+              <rect x={x-30} y={y-12} width="60" height="24" rx="6" fill="#0e1117" stroke="#ece4d028" />
+              <text x={x} y={y+4} textAnchor="middle" fontFamily="JetBrains Mono" fontSize="9" fill="#ece4d099">{l}</text>
+            </g>
+          ))}
+          <circle cx="200" cy="160" r="8" fill="#3eff9a">
+            <animate attributeName="r" from="8" to="44" dur="2.4s" repeatCount="indefinite" />
+            <animate attributeName="opacity" from="0.5" to="0" dur="2.4s" repeatCount="indefinite" />
+          </circle>
+        </svg>
+      </div>
+    );
+  }
+  if (kind === "face") {
+    return (
+      <div className="vmount v-face">
+        <div className="face-grid" />
+        <div className="bracket" />
+        <div className="fps">▸ 32 FPS · LATENCY 31ms · 30% ↑</div>
+      </div>
+    );
+  }
+};
+
+const Projects = () => {
+  const [active, setActive] = React.useState(0);
+  const [paused, setPaused] = React.useState(false);
+  const ROTATE_MS = 3000;
+  const startRef = React.useRef(performance.now());
+  const barRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (paused) return;
+    startRef.current = performance.now();
+    let raf;
+    const tick = (now) => {
+      const t = Math.min(1, (now - startRef.current) / ROTATE_MS);
+      if (barRef.current) {
+        barRef.current.style.transform = `scaleX(${t.toFixed(3)})`;
+      }
+      if (t >= 1) {
+        setActive((a) => (a + 1) % PROJECTS.length);
+        startRef.current = performance.now();
+        if (barRef.current) barRef.current.style.transform = "scaleX(0)";
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [paused, active]);
+
+  const pick = (i) => {
+    setActive(i);
+    startRef.current = performance.now();
+    if (barRef.current) barRef.current.style.transform = "scaleX(0)";
+  };
+
+  const p = PROJECTS[active];
+
+  return (
+    <section id="projects" className="projects">
+      <div className="eyebrow"><span className="dot" />02 / Selected Projects</div>
+      <h2 className="section-title">Things I've <em>built</em>.</h2>
+      <div
+        className="proj-stage"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <aside className="proj-rail">
+          <div className="pr-head">
+            <span className="pr-label">// archive</span>
+            <span className="pr-count">{String(active + 1).padStart(2, "0")} / {String(PROJECTS.length).padStart(2, "0")}</span>
+          </div>
+          <ul className="pr-list">
+            {PROJECTS.map((pr, i) => (
+              <li
+                key={pr.num}
+                className={`pr-item ${i === active ? "on" : ""}`}
+                onClick={() => pick(i)}
+              >
+                <span className="pr-num">{pr.num}</span>
+                <span className="pr-title">{pr.title}</span>
+                <span className="pr-em">{pr.em}</span>
+                {i === active && (
+                  <span className="pr-bar"><span ref={barRef} className="pr-bar-fill" /></span>
+                )}
+              </li>
+            ))}
+          </ul>
+          <div className="pr-foot">
+            <span className={`pr-state ${paused ? "paused" : ""}`}>
+              <span className="pr-state-dot" />
+              {paused ? "paused" : "auto-rotating"}
+            </span>
+          </div>
+        </aside>
+        <div className="proj-window" key={active}>
+          <article className="project-card live">
+            <div className="info">
+              <div className="num">PROJECT · {p.num}</div>
+              <h3>{p.title} <em>— {p.em}</em></h3>
+              <div className="desc">{p.desc}</div>
+              <div className="actions">
+                <a href={p.github} className="btn btn-gh" target="_blank" rel="noopener noreferrer"><Icon.github /><span>GitHub</span></a>
+                {p.url && <a href={p.url} className="btn" target="_blank" rel="noopener noreferrer"><Icon.externalLink /><span>Visit</span></a>}
+              </div>
+              <div className="stack">
+                {p.stack.map((s, si) => <span key={si} className="chip">{s}</span>)}
+              </div>
+            </div>
+            <div className="visual"><ProjectVisual kind={p.visual} /></div>
+          </article>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+window.Projects = Projects;
+</script>
+
+<script type="text/babel">
+/* Experience & Contact */
+const TL_ITEMS = [
+  {
+    date: "2023 — NOW",
+    now: true,
+    title: "B.Tech CSIT, undergraduate",
+    org: "Koneru Lakshmaiah University",
+    mode: "Hyderabad",
+    desc: "Computer science & information technology with a focus on full-stack development, systems, and ML.",
+    bullets: [
+      "Self-directed projects spanning full-stack, infrastructure, and computer vision",
+      "Consistent focus on measurement-first, well-instrumented software",
+      "Expected graduation: 2027",
+    ],
+    tech: ["Python", "Java", "C/C++", "SQL", "Linux"],
+  },
+  {
+    date: "May 2025 — Jun 2025",
+    title: "Software Development Engineer Intern",
+    org: "BlueStock Fintech",
+    mode: "Remote",
+    desc: "Built and shipped features end-to-end across a fintech platform — REST APIs, React UI components, and backend logic — while contributing to a shared CI/CD pipeline and weekly code review cycle.",
+    bullets: [
+      "Designed and built 5+ REST APIs with structured request/response contracts backed by PostgreSQL",
+      "Built React components and matching Node.js backend logic for complete feature delivery",
+      "Wrote SQL queries and designed table schemas across MySQL and PostgreSQL",
+      "Connected third-party APIs with proper error handling, retries, and data formatting",
+      "Shipped through a CI/CD pipeline and participated in weekly code reviews",
+    ],
+    tech: ["React", "Node.js", "PostgreSQL", "MySQL", "REST API", "CI/CD"],
+  },
+];
+
+const Experience = () => (
+  <section id="experience" className="experience">
+    <div className="eyebrow"><span className="dot" />04 / Timeline</div>
+    <h2 className="section-title">Where I've <em>been</em>.</h2>
+    <div className="zigzag">
+      <div className="tl-line" aria-hidden="true" />
+      {TL_ITEMS.map((item, i) => (
+        <div key={i} className={`tl-row ${i % 2 === 0 ? "left" : "right"} ${item.now ? "now" : ""}`}>
+          <div className="tl-dot" aria-hidden="true" />
+          <article className="tl-card">
+            <header className="tlc-head">
+              <h3 className="tlc-title">{item.title}</h3>
+              <div className="tlc-date">
+                <svg className="tlc-cal" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8"  y1="2" x2="8"  y2="6" />
+                  <line x1="3"  y1="10" x2="21" y2="10" />
+                </svg>
+                <span>{item.date}</span>
+              </div>
+            </header>
+            <div className="tlc-sub">
+              <svg className="tlc-org-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 21h18" />
+                <path d="M5 21V7l8-4v18" />
+                <path d="M19 21V11l-6-4" />
+              </svg>
+              <span className="tlc-org">{item.org}</span>
+              <span className="tlc-bar">|</span>
+              <span className="tlc-mode">{item.mode}</span>
+            </div>
+            <p className="tlc-desc">{item.desc}</p>
+            <ul className="tlc-bullets">
+              {item.bullets.map((b, bi) => (
+                <li key={bi}><span className="tlc-bullet-mark" aria-hidden="true">▸</span>{b}</li>
+              ))}
+            </ul>
+            <div className="tlc-tech">
+              {item.tech.map((t, ti) => <span key={ti} className="tlc-chip">{t}</span>)}
+            </div>
+          </article>
+        </div>
+      ))}
+    </div>
+  </section>
+);
+
+const Contact = () => (
+  <section id="contact" className="contact">
+    <div className="eyebrow"><span className="dot" />05 / Contact</div>
+    <div className="contact-card glass">
+      <div>
+        <h3>let's <em>build</em> something<br/>together.</h3>
+        <div className="contact-meta">
+          <div>// response time: usually within a day, sometimes two if I'm soldering</div>
+        </div>
+      </div>
+      <div className="contact-actions">
+        <a href="mailto:jayakanthkamisetti@gmail.com" className="btn primary"><span>email — jayakanthkamisetti@gmail.com</span><span>→</span></a>
+        <a href="https://github.com/jayakanthh" target="_blank" rel="noopener noreferrer" className="btn"><span>github — @jayakanthh</span><span>↗</span></a>
+        <a href="https://www.linkedin.com/in/jayakanthh/" target="_blank" rel="noopener noreferrer" className="btn"><span>linkedin — /in/jayakanthh</span><span>↗</span></a>
+        <a href="Resume.pdf" className="btn" download="Jayakanth_Kamisetti_Resume.pdf"><span>download resume</span><span>↓</span></a>
+      </div>
+    </div>
+  </section>
+);
+
+window.Experience = Experience;
+window.Contact = Contact;
+</script>
+
+<script type="text/babel">
+/* Certifications */
+const CERTS_V3 = [
+  { issuer: "AWS", title: "AWS Certified Cloud Practitioner", date: "Feb 2026", color: "#FF9900", tag: "cloud", img: "certs/aws-cp.png", verify: "https://aws.amazon.com/verification" },
+  { issuer: "Cisco", title: "CCNA: Introduction to Networks", date: "2024", color: "#1BA0D7", tag: "networking", img: "certs/cisco-ccna.png", verify: "https://www.credly.com/badges/fde4d1d3-e2d6-4ca4-a5b8-f9e4645e2a55/public_url", badge: true },
+  { issuer: "Aviatrix", title: "Multicloud Network Associate", date: "Feb 2026", color: "#FF6C37", tag: "cloud", img: "certs/aviatrix-ace.png", verify: "https://www.credly.com/badges/f25a3890-ca39-43df-a443-c2da104874fd/public_url" },
+  { issuer: "Automation Anywhere", title: "Certified Advanced Automation Professional", date: "Nov 2025", color: "#E8A000", tag: "automation", img: "certs/automation-anywhere.png", verify: "https://certificates.automationanywhere.com/f08af982-738c-4daf-b75f-2c37ea8b3cf4" },
+  { issuer: "MongoDB", title: "MongoDB Python Developer Path", date: "Oct 2025", color: "#47A248", tag: "database", img: "certs/mongodb.png", verify: "https://learn.mongodb.com/c/MDBs7vxthif6m" },
+  { issuer: "Google Cloud", title: "Prompt Design in Vertex AI", date: "2024", color: "#4285F4", tag: "ai", img: "certs/google-vertex.png", verify: "https://www.credly.com/badges/dd9899e3-ae8e-4548-9510-17ec34fb46e5/public_url", badge: true },
+];
+
+const CertImage = ({ c }) => {
+  const [failed, setFailed] = React.useState(false);
+  return (
+    <div className={`cv3-img${c.badge ? " is-badge" : ""}`} style={{ "--bc": c.color }}>
+      {!failed && (
+        <img src={c.img} alt={`${c.title} certificate`} draggable="false" onError={() => setFailed(true)} />
+      )}
+      {failed && (
+        <div className="cv3-img-placeholder" aria-hidden="true">
+          <div className="cv3-ph-stripes" />
+          <div className="cv3-ph-meta">
+            <div className="cv3-ph-tag">// certificate slot</div>
+            <div className="cv3-ph-path">{c.img}</div>
+            <div className="cv3-ph-hint">drop a PNG here</div>
+          </div>
+        </div>
+      )}
+      <div className="cv3-img-corner">// {c.tag}</div>
+    </div>
+  );
+};
+
+const AUTO_MS = 3000;
+const SLIDE_MS = 620;
+
+const CertCard = React.forwardRef(({ c, layer, dir }, ref) => (
+  <article ref={ref} className={`cv3-card ${layer}`} data-dir={dir} style={{ "--bc": c.color }}>
+    <CertImage c={c} />
+    <div className="cv3-body">
+      <div className="cv3-meta-top">
+        <span className="cv3-org">{c.issuer}</span>
+        <span className="cv3-meta-sep" />
+        <span className="cv3-date">
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8"  y1="2" x2="8"  y2="6" />
+            <line x1="3"  y1="10" x2="21" y2="10" />
+          </svg>
+          {c.date}
+        </span>
+      </div>
+      <h3 className="cv3-title">{c.title}</h3>
+      {c.verify && (
+        <a className="cv3-verify" href={c.verify} target="_blank" rel="noopener noreferrer" aria-label={`Verify ${c.title} credential`} tabIndex={layer === "exit" ? -1 : 0}>
+          <span className="cv3-verify-dot" />
+          <span>verify credential</span>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M7 17L17 7" /><path d="M8 7h9v9" />
+          </svg>
+        </a>
+      )}
+    </div>
+  </article>
+));
+
+const Certifications = () => {
+  const [i, setI] = React.useState(0);
+  const [exiting, setExiting] = React.useState(null);
+  const [dir, setDir] = React.useState(1);
+  const [paused, setPaused] = React.useState(false);
+  const [inView, setInView] = React.useState(false);
+  const total = CERTS_V3.length;
+  const c = CERTS_V3[i];
+  const exitTimer = React.useRef(null);
+  const iRef = React.useRef(0);
+  React.useEffect(() => { iRef.current = i; }, [i]);
+
+  const change = React.useCallback((next, d) => {
+    const cur = iRef.current;
+    if (next === cur) return;
+    setDir(d);
+    setExiting({ idx: cur, dir: d });
+    clearTimeout(exitTimer.current);
+    exitTimer.current = setTimeout(() => setExiting(null), SLIDE_MS);
+    setI(next);
+  }, []);
+
+  const go = React.useCallback((delta) => {
+    const cur = iRef.current;
+    change((cur + delta + total) % total, delta >= 0 ? 1 : -1);
+  }, [total, change]);
+
+  const jumpTo = React.useCallback((j) => {
+    const cur = iRef.current;
+    if (j !== cur) change(j, j > cur ? 1 : -1);
+  }, [change]);
+
+  React.useEffect(() => () => clearTimeout(exitTimer.current), []);
+
+  const autoOK = inView && !paused && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  React.useEffect(() => {
+    if (!autoOK) return;
+    const t = setTimeout(() => go(1), AUTO_MS);
+    return () => clearTimeout(t);
+  }, [autoOK, i, go]);
+
+  React.useEffect(() => {
+    const sec = document.getElementById("certifications");
+    if (!sec) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.4 });
+    io.observe(sec);
+    return () => io.disconnect();
+  }, []);
+
+  React.useEffect(() => {
+    if (!inView) return;
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [inView, go]);
+
+  const touch = React.useRef({ x: 0, active: false });
+  const onTStart = (e) => { touch.current = { x: e.touches[0].clientX, active: true }; setPaused(true); };
+  const onTEnd = (e) => {
+    if (!touch.current.active) return;
+    const dx = e.changedTouches[0].clientX - touch.current.x;
+    touch.current.active = false;
+    setPaused(false);
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  };
+
+  return (
+    <section id="certifications" className="certs-v3">
+      <div className="eyebrow"><span className="dot" />05 / Certifications</div>
+      <div className="cv3-head">
+        <h2 className="section-title">Certifications, <em>verified</em>.</h2>
+        <div className="cv3-counter">
+          <span className="cv3-counter-n">{(i + 1).toString().padStart(2, "0")}</span>
+          <span className="cv3-counter-sep">/</span>
+          <span className="cv3-counter-t">{total.toString().padStart(2, "0")}</span>
+        </div>
+      </div>
+      <div className="cv3-stage" onTouchStart={onTStart} onTouchEnd={onTEnd} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+        <button className="cv3-nav prev" onClick={() => go(-1)} aria-label="Previous certificate">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+        </button>
+        <div className="cv3-viewport">
+          {exiting && <CertCard key={`exit-${exiting.idx}`} c={CERTS_V3[exiting.idx]} layer="exit" dir={exiting.dir} />}
+          <CertCard key={`enter-${i}`} c={c} layer="enter" dir={dir} />
+        </div>
+        <button className="cv3-nav next" onClick={() => go(1)} aria-label="Next certificate">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+      </div>
+      <div className="cv3-dots" role="tablist" aria-label="Certificate slides" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+        {CERTS_V3.map((cc, j) => (
+          <button key={cc.title} className={`cv3-dot ${j === i ? "on" : ""}`} onClick={() => jumpTo(j)} role="tab" aria-selected={j === i} aria-label={`Show ${cc.title}`}>
+            <span className="cv3-dot-line" />
+            {j === i && <span className="cv3-dot-fill" data-run={autoOK ? "1" : "0"} style={{ animationDuration: `${AUTO_MS}ms` }} key={`fill-${i}-${autoOK}`} />}
+          </button>
+        ))}
+      </div>
+      <div className="cv3-hint">// auto-advancing · hover to pause · ← → arrow keys · swipe</div>
+    </section>
+  );
+};
+
+window.Certifications = Certifications;
+</script>
+
+<script>
+/* Motion utilities */
+(function () {
+  document.documentElement.style.scrollBehavior = "smooth";
+
+  const reveal = (root = document) => {
+    const els = root.querySelectorAll(
+      ".section-title, .eyebrow, .about-body p, .about-stats, .about .pic, .project-card, .timeline-item, .contact-card, .hero-h, .hero-sub, .hero-actions, .tech-stage, [data-split]"
+    );
+    els.forEach((el) => {
+      if (el.dataset.revealReady) return;
+      el.dataset.revealReady = "1";
+      el.classList.add("reveal");
+    });
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add("revealed"); io.unobserve(e.target); }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" }
+    );
+    els.forEach((el) => io.observe(el));
+  };
+
+  const magnetize = () => {
+    const els = document.querySelectorAll(".btn, .nav-pill a, .chip, .project-card .actions a");
+    els.forEach((el) => {
+      if (el.dataset.magReady) return;
+      el.dataset.magReady = "1";
+      let raf;
+      const onMove = (e) => {
+        const r = el.getBoundingClientRect();
+        const dx = (e.clientX - (r.left + r.width / 2)) * 0.25;
+        const dy = (e.clientY - (r.top + r.height / 2)) * 0.25;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => { el.style.transform = `translate(${dx}px, ${dy}px)`; });
+      };
+      const onLeave = () => { cancelAnimationFrame(raf); el.style.transform = ""; };
+      el.addEventListener("mousemove", onMove);
+      el.addEventListener("mouseleave", onLeave);
+    });
+  };
+
+  const tilt = () => {
+    const els = document.querySelectorAll(".project-card, .about .pic, .contact-card, .tw3-tile");
+    els.forEach((el) => {
+      if (el.dataset.tiltReady) return;
+      el.dataset.tiltReady = "1";
+      const tile = el.classList.contains("tw3-tile");
+      const amp = tile ? 12 : 5;
+      let raf;
+      const onMove = (e) => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const rx = tile ? -py * amp : -py * 4;
+          const ry = tile ? px * amp : px * 5;
+          const lift = tile ? " translateY(-4px)" : "";
+          el.style.transform = `perspective(1200px) rotateX(${rx}deg) rotateY(${ry}deg)${lift} translateZ(0)`;
+          el.style.setProperty("--mx", `${(px + 0.5) * 100}%`);
+          el.style.setProperty("--my", `${(py + 0.5) * 100}%`);
+        });
+      };
+      const onLeave = () => { cancelAnimationFrame(raf); el.style.transform = ""; };
+      el.addEventListener("mousemove", onMove);
+      el.addEventListener("mouseleave", onLeave);
+    });
+  };
+
+  const parallax = () => {
+    const layers = document.querySelectorAll("[data-parallax]");
+    if (!layers.length) return;
+    let raf = null;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        layers.forEach((l) => { const speed = parseFloat(l.dataset.parallax) || 0.2; l.style.transform = `translateY(${y * speed}px)`; });
+        raf = null;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  };
+
+  const splitText = () => {
+    document.querySelectorAll("[data-split]").forEach((el) => {
+      if (el.dataset.splitDone) return;
+      el.dataset.splitDone = "1";
+      const text = el.textContent;
+      el.textContent = "";
+      [...text].forEach((ch, i) => {
+        const span = document.createElement("span");
+        span.className = "ch";
+        span.textContent = ch === " " ? " " : ch;
+        span.style.transitionDelay = `${i * 22}ms`;
+        el.appendChild(span);
+      });
+    });
+  };
+
+  const runAll = () => { splitText(); reveal(); magnetize(); tilt(); };
+
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    setTimeout(runAll, 100);
+  } else {
+    document.addEventListener("DOMContentLoaded", runAll);
+  }
+  setTimeout(runAll, 600);
+  setTimeout(runAll, 1500);
+  setTimeout(runAll, 3000);
+  parallax();
+
+  // re-attach tilt/magnetize whenever React swaps in new DOM nodes (e.g. project card switch)
+  let debounce;
+  new MutationObserver(() => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => { tilt(); magnetize(); }, 50);
+  }).observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+
+<script type="text/babel">
+const App = () => (
+  <>
+    <Cursor />
+    <div className="nebula"><div className="blob b1" /><div className="blob b2" /><div className="blob b3" /><div className="blob b4" /></div>
+    <div className="stars" />
+    <Navbar />
+    <main className="shell">
+      <Hero />
+      <About />
+      <Projects />
+      <TechStack />
+      <Experience />
+      <Certifications />
+      <Contact />
+    </main>
+    <FooterMini />
+    <ToTop />
+    <div className="crt-scan" />
+    <div className="crt-vignette" />
+  </>
+);
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+// The splash hides only once BOTH the boot log has finished AND React has
+// painted — so we never cut the boot sequence short, and never reveal an
+// unpainted page. Either side calls maybeHideSplash(); the last one wins.
+window.maybeHideSplash = function () {
+  if (!window.__bootDone || !window.__reactPainted) return;
+  document.body.classList.add("booted");
+  setTimeout(function () {
+    var sp = document.getElementById("splash");
+    if (sp) sp.remove();
+  }, 420);
+};
+
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    window.__reactPainted = true;
+    window.maybeHideSplash();
+  });
+});
+
+// Safety net: never let the splash hang if something stalls.
+setTimeout(function () {
+  window.__bootDone = true;
+  window.__reactPainted = true;
+  window.maybeHideSplash();
+}, 6000);
+</script>
+</body>
+</html>
